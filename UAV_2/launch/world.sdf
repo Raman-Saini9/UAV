@@ -1,0 +1,642 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <world name="harmonic_gas_pipeline_world">
+    
+    <!-- Required System Plugins for Gazebo Harmonic -->
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
+    </plugin>
+    
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands">
+    </plugin>
+    
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact">
+    </plugin>
+    
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
+    </plugin>
+    
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    
+    <!-- Physics Configuration -->
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    
+    <!-- Lighting -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    
+    <!-- Ground Plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0 0 0 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- DRONE -->
+    <model name='x500-fpv'>
+      <pose>2 -2 4 0 0 0</pose>
+      <include merge='true'>
+        <uri>https://fuel.gazebosim.org/1.0/PX4/models/x500</uri>
+      </include>
+      
+      <!-- IMU Link and Joint -->
+      <joint name="imu_joint" type="fixed">
+        <parent>base_link</parent>
+        <child>imu_link</child>
+        <pose relative_to="base_link">0 0 0.1 0 0 0</pose>
+      </joint>
+      
+      <link name="imu_link">
+        <sensor name="imu_sensor" type="imu">
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+          <visualize>true</visualize>
+          <topic>/imu/data</topic>
+          <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
+          </plugin>
+        </sensor>
+      </link>
+      
+      <!-- Camera Link and Joint -->
+      <joint name="camera_joint" type="fixed">
+        <parent>base_link</parent>
+        <child>camera_link</child>
+        <pose relative_to="base_link">0.12 0.03 0.242 0 0 0</pose>
+      </joint>
+      
+      <link name="camera_link">
+        <sensor name="camera_sensor" type="camera">
+          <pose>0 0 0 0 0 0</pose>
+          <camera>
+            <horizontal_fov>1.3962634</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>true</visualize>
+          <topic>/camera/image_raw</topic>
+          <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+          </plugin>
+        </sensor>
+      </link>
+    </model>
+    
+    <!-- Garden Gazebo Structure -->
+    <model name="garden_gazebo">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      
+      <!-- Gazebo Floor -->
+      <link name="gazebo_floor">
+        <pose>0 0 0.05 0 0 0</pose>
+        <collision name="floor_collision">
+          <geometry>
+            <cylinder>
+              <radius>3.0</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="floor_visual">
+          <geometry>
+            <cylinder>
+              <radius>3.0</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Gazebo Pillars -->
+      <link name="pillar_1">
+        <pose>2.1 2.1 1.5 0 0 0</pose>
+        <collision name="pillar_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="pillar_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <link name="pillar_2">
+        <pose>-2.1 2.1 1.5 0 0 0</pose>
+        <collision name="pillar_collision_2">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="pillar_visual_2">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <link name="pillar_3">
+        <pose>2.1 -2.1 1.5 0 0 0</pose>
+        <collision name="pillar_collision_3">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="pillar_visual_3">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <link name="pillar_4">
+        <pose>-2.1 -2.1 1.5 0 0 0</pose>
+        <collision name="pillar_collision_4">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="pillar_visual_4">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Gazebo Roof -->
+      <link name="roof">
+        <pose>0 0 3.2 0 0 0</pose>
+        <collision name="roof_collision">
+          <geometry>
+            <cylinder>
+              <radius>3.2</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="roof_visual">
+          <geometry>
+            <cylinder>
+              <radius>3.2</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.6 0.3 0.1 1</ambient>
+            <diffuse>0.6 0.3 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    
+    <!-- Gas Pipeline System -->
+    <model name="gas_pipeline_system">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      
+      <!-- Main Underground Pipeline -->
+      <link name="main_pipeline">
+        <pose>0 0 -0.5 0 0 0</pose>
+        <collision name="main_pipe_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>20.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="main_pipe_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>20.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.8 0.8 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Branch Pipeline 1 -->
+      <link name="branch_pipeline_1">
+        <pose>5 0 -0.5 0 1.57 0</pose>
+        <collision name="branch_pipe_collision_1">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>8.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="branch_pipe_visual_1">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>8.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.8 0.8 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Branch Pipeline 2 -->
+      <link name="branch_pipeline_2">
+        <pose>-5 0 -0.5 0 1.57 0</pose>
+        <collision name="branch_pipe_collision_2">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>8.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="branch_pipe_visual_2">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>8.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.8 0.8 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Pipeline Valve 1 -->
+      <link name="valve_1">
+        <pose>3 0 0.2 0 0 0</pose>
+        <collision name="valve_collision_1">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="valve_visual_1">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.2 0.2 0.8 1</ambient>
+            <diffuse>0.2 0.2 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Pipeline Valve 2 -->
+      <link name="valve_2">
+        <pose>-3 0 0.2 0 0 0</pose>
+        <collision name="valve_collision_2">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="valve_visual_2">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.8</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.2 0.2 0.8 1</ambient>
+            <diffuse>0.2 0.2 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Pipeline Meter/Gauge -->
+      <link name="gas_meter">
+        <pose>0 3 0.5 0 0 1.57</pose>
+        <collision name="meter_collision">
+          <geometry>
+            <box>
+              <size>1.0 0.6 1.2</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="meter_visual">
+          <geometry>
+            <box>
+              <size>1.0 0.6 1.2</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.5 0.5 1</ambient>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Connection Pipe to Meter -->
+      <link name="connection_pipe">
+        <pose>0 1.5 -0.2 0 1.57 1.57</pose>
+        <collision name="connection_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.1</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="connection_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.1</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.8 0.8 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Vertical Riser Pipe -->
+      <link name="riser_pipe">
+        <pose>0 3 -0.1 0 0 0</pose>
+        <collision name="riser_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.1</radius>
+              <length>1.2</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="riser_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.1</radius>
+              <length>1.2</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.8 0.8 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <!-- Pipeline Markers/Signs -->
+      <link name="warning_sign_1">
+        <pose>3 2 1.0 0 0 0</pose>
+        <collision name="sign_collision_1">
+          <geometry>
+            <box>
+              <size>0.8 0.05 0.6</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="sign_visual_1">
+          <geometry>
+            <box>
+              <size>0.8 0.05 0.6</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.0 0.8 0.0 1</ambient>
+            <diffuse>1.0 0.8 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      
+      <link name="warning_sign_2">
+        <pose>-3 2 1.0 0 0 0</pose>
+        <collision name="sign_collision_2">
+          <geometry>
+            <box>
+              <size>0.8 0.05 0.6</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="sign_visual_2">
+          <geometry>
+            <box>
+              <size>0.8 0.05 0.6</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.0 0.8 0.0 1</ambient>
+            <diffuse>1.0 0.8 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    
+    <!-- Trees around the gazebo -->
+    <model name="tree_1">
+      <static>true</static>
+      <pose>-6 -6 0 0 0 0</pose>
+      <link name="trunk_1">
+        <pose>0 0 1.5 0 0 0</pose>
+        <collision name="trunk_collision_1">
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="trunk_visual_1">
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.4 0.2 0.1 1</ambient>
+            <diffuse>0.4 0.2 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <link name="canopy_1">
+        <pose>0 0 3.5 0 0 0</pose>
+        <collision name="canopy_collision_1">
+          <geometry>
+            <sphere>
+              <radius>2.0</radius>
+            </sphere>
+          </geometry>
+        </collision>
+        <visual name="canopy_visual_1">
+          <geometry>
+            <sphere>
+              <radius>2.0</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0.1 0.6 0.1 1</ambient>
+            <diffuse>0.1 0.6 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    
+    <model name="tree_2">
+      <static>true</static>
+      <pose>6 6 0 0 0 0</pose>
+      <link name="trunk_2">
+        <pose>0 0 1.5 0 0 0</pose>
+        <collision name="trunk_collision_2">
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="trunk_visual_2">
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>3.0</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.4 0.2 0.1 1</ambient>
+            <diffuse>0.4 0.2 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <link name="canopy_2">
+        <pose>0 0 3.5 0 0 0</pose>
+        <collision name="canopy_collision_2">
+          <geometry>
+            <sphere>
+              <radius>2.0</radius>
+            </sphere>
+          </geometry>
+        </collision>
+        <visual name="canopy_visual_2">
+          <geometry>
+            <sphere>
+              <radius>2.0</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0.1 0.6 0.1 1</ambient>
+            <diffuse>0.1 0.6 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    
+    <!-- Scene Settings -->
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 1 1</background>
+      <shadows>1</shadows>
+    </scene>
+    
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>8 8 6 0 0.4 -2.4</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+    
+  </world>
+</sdf>
